@@ -1,6 +1,8 @@
 package corp.kahuna;
 
-import java.util.Scanner;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.NonBlockingReader;
 
 public class Main {
 
@@ -16,20 +18,26 @@ public class Main {
     private static final char INFO = 'i';
     private static final char QUIT = 'q';
 
-    private static final StringBuilder BUILDER = new StringBuilder();
+    public static void main(String[] args) throws Exception {
 
-    // main
-    public static void main(String[] args) {
-
-        Scanner scanner = new Scanner(System.in);
         Car batmobile = new Car("The Batmobile");
 
-        char control;
+        Terminal terminal = TerminalBuilder.builder()
+                .system(true)
+                .build();
+
+        terminal.enterRawMode();
+
+        NonBlockingReader reader = terminal.reader();
+
+        int control;
         boolean playing = true;
         int accelerationFactor = 1;
         int carPosition = 15;
 
         // Instructions
+        System.out.println("=> without timeout <=");
+
         System.out.println("Welcome to the Console Grand Prix");
         System.out.println("=================================");
         System.out.println();
@@ -51,7 +59,8 @@ public class Main {
         System.out.printf("'%s' will quit.%n", QUIT);
 
         do {
-            control = scanner.nextLine().toLowerCase().charAt(0);
+            control = reader.read();
+
             if (Character.isDigit(control)) {
                 accelerationFactor = control - '0';
             } else {
@@ -60,25 +69,19 @@ public class Main {
                         // move left
                         for (int i = 0; i < batmobile.getSpeed(); i++) {
                             carPosition--;
-                            buildRoad(carPosition);
+                            drawRoad(carPosition);
                         }
-
-                        drawRoad();
                         break;
                     case STRAIGHT:
                         for (int i = 0; i < batmobile.getSpeed(); i++) {
-                            buildRoad(carPosition);
+                            drawRoad(carPosition);
                         }
-
-                        drawRoad();
                         break;
                     case RIGHT:
                         for (int i = 0; i < batmobile.getSpeed(); i++) {
                             carPosition++;
-                            buildRoad(carPosition);
+                            drawRoad(carPosition);
                         }
-
-                        drawRoad();
                         break;
                     case ACCELERATE:
                         batmobile.accelerate(accelerationFactor);
@@ -96,20 +99,14 @@ public class Main {
             }
         } while (playing);
 
-        scanner.close();
+        reader.close();
+        terminal.close();
     }
 
-    private static void drawRoad() {
-        System.out.println(BUILDER.toString());
-    }
-
-    private static void buildRoad(int carPosition) {
+    private static void drawRoad(int carPosition) {
         // insert car symbol in the "road"
         String roadLine = ROAD.substring(0, carPosition) + CAR_SYMBOL + ROAD.substring(carPosition);
-
-        // add to builder with line separator
-        BUILDER.append(roadLine);
-        BUILDER.append(System.lineSeparator());
+        System.out.println(roadLine);
     }
 }
 
